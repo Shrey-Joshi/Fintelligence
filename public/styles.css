@@ -9,16 +9,17 @@ body {
   background: #0a0f1a;
   color: #e0e6ed;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .container {
-  max-width: 800px;
-  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
   padding: 2rem;
+}
+
+header {
   text-align: center;
+  margin-bottom: 3rem;
 }
 
 header h1 {
@@ -33,24 +34,105 @@ header h1 {
 .tagline {
   color: #8892a4;
   font-size: 1.1rem;
-  margin-bottom: 3rem;
 }
 
-.hero {
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 3rem 2rem;
+  border-radius: 12px;
+  padding: 1.5rem;
 }
 
-.hero h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
+.card h3 {
+  margin-bottom: 1.2rem;
   color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
 }
 
-.hero p {
+.input-group {
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.9rem;
   color: #8892a4;
+  margin-bottom: 0.4rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 0.6rem;
+  color: #fff;
+  font-size: 1rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #00d2ff;
+}
+
+.actions {
+  text-align: center;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #00d2ff, #7b2ff7);
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  color: #fff;
+  font-weight: bold;
   font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.hidden {
+  display: none;
+}
+
+#loading {
+  text-align: center;
+  color: #00d2ff;
+  font-weight: bold;
+}
+
+.advice-card {
+  background: rgba(123, 47, 247, 0.1);
+  border-color: rgba(123, 47, 247, 0.3);
+}
+
+#advice-content {
   line-height: 1.6;
+}
+
+#advice-content p {
+  margin-bottom: 1rem;
+}
+
+#advice-content ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
 }
