@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Fintelligence Investor Demo</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Fintelligence</h1>
+      <p class="tagline">Investor Demo: Financial Intelligence Platform</p>
+    </header>
+
+    <main class="dashboard">
+      <section class="inputs">
+        <!-- Banking Card -->
+        <div class="card">
+          <h3>Banking (Checking/Savings)</h3>
+          <div class="tab-bar">
+            <button class="tab-btn active" data-tab="manual-banking">Manual Entry</button>
+            <button class="tab-btn" data-tab="pdf-banking">Upload PDF</button>
+          </div>
+          <div id="manual-banking" class="tab-content active">
+            <div class="input-group">
+              <label>Checking Balance ($)</label>
+              <input type="number" id="checking" value="5420.50">
+            </div>
+            <div class="input-group">
+              <label>Savings Balance ($)</label>
+              <input type="number" id="savings" value="12500.00">
+            </div>
+          </div>
+          <div id="pdf-banking" class="tab-content">
+            <div class="upload-zone" id="pdf-drop-zone">
+              <div class="upload-icon">&#128196;</div>
+              <p>Drag & drop a bank statement PDF here</p>
+              <p class="upload-hint">or click to browse files</p>
+              <input type="file" id="pdf-input" accept=".pdf" hidden>
+            </div>
+            <div id="pdf-status" class="hidden">
+              <div class="status-badge">
+                <span id="pdf-status-icon"></span>
+                <span id="pdf-status-text"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brokerage Card -->
+        <div class="card">
+          <h3>Portfolio (Brokerage)</h3>
+          <div id="brokerage-connect">
+            <div class="input-group">
+              <label>Brokerage API Key</label>
+              <div class="api-key-row">
+                <input type="password" id="brokerage-api-key" placeholder="Enter your brokerage API key...">
+                <button class="secondary-btn" id="connect-brokerage-btn">Connect</button>
+              </div>
+              <p class="field-hint">Simulated connection - enter any key to demo</p>
+            </div>
+            <div id="brokerage-loading" class="hidden">
+              <div class="spinner"></div>
+              <span>Connecting to brokerage...</span>
+            </div>
+          </div>
+          <div id="brokerage-connected" class="hidden">
+            <div class="connected-badge">
+              <span class="badge-dot"></span> Connected
+              <button class="text-btn" id="disconnect-brokerage">Disconnect</button>
+            </div>
+            <div class="portfolio-summary" id="portfolio-summary"></div>
+            <button class="secondary-btn small" id="view-holdings-btn">View / Edit Holdings</button>
+          </div>
+          <div id="brokerage-fallback">
+            <div class="input-group">
+              <label>Or enter portfolio value manually ($)</label>
+              <input type="number" id="portfolio" value="45200.00">
+            </div>
+            <div class="input-group">
+              <label>Risk Tolerance</label>
+              <select id="risk">
+                <option value="conservative">Conservative</option>
+                <option value="moderate" selected>Moderate</option>
+                <option value="aggressive">Aggressive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- News Card -->
+        <div class="card">
+          <h3>Latest News (RSS Feed Simulation)</h3>
+          <div class="input-group">
+            <label>News Items (one per line)</label>
+            <textarea id="news" rows="4">Federal Reserve signals rate cut in Q3
+Tech stocks rally on AI breakthrough
+Global trade tensions ease slightly
+Inflation data shows cooling trend</textarea>
+          </div>
+        </div>
+
+        <!-- Transaction Summary Card -->
+        <div class="card full-width">
+          <h3>Transaction Summary</h3>
+          <div class="tab-bar">
+            <button class="tab-btn active" data-tab="manual-txn">Paste / Type</button>
+            <button class="tab-btn" data-tab="upload-txn">Upload PDF</button>
+          </div>
+          <div id="manual-txn" class="tab-content active">
+            <div class="input-group">
+              <label>Paste your recent transactions (any format)</label>
+              <textarea id="transactions-text" rows="5" placeholder="e.g.&#10;01/15 Starbucks $5.40&#10;01/15 Amazon $52.99&#10;01/16 Paycheck +$3,200.00&#10;01/17 Electric bill $145.00"></textarea>
+            </div>
+            <button class="secondary-btn" id="parse-txn-btn">Parse Transactions with AI</button>
+          </div>
+          <div id="upload-txn" class="tab-content">
+            <div class="upload-zone" id="txn-drop-zone">
+              <div class="upload-icon">&#128196;</div>
+              <p>Drag & drop a transaction statement PDF</p>
+              <p class="upload-hint">or click to browse files</p>
+              <input type="file" id="txn-pdf-input" accept=".pdf" hidden>
+            </div>
+          </div>
+          <div id="txn-loading" class="hidden">
+            <div class="spinner"></div>
+            <span>Parsing transactions...</span>
+          </div>
+          <div id="txn-results" class="hidden">
+            <div class="txn-summary-bar" id="txn-summary-bar"></div>
+            <div class="txn-table-wrap">
+              <table id="txn-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="txn-table-body"></tbody>
+              </table>
+            </div>
+            <button class="text-btn" id="add-txn-row">+ Add transaction</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="actions">
+        <button id="analyze-btn" class="primary-btn">Generate AI Financial Advice</button>
+      </section>
+
+      <section class="results">
+        <div id="loading" class="hidden">
+          <div class="spinner"></div>
+          <span>Analyzing your financial data with AI...</span>
+        </div>
+        <div id="advice-container" class="card advice-card hidden">
+          <h3>AI Investment Thesis</h3>
+          <div id="advice-content"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Holdings Modal -->
+  <div id="holdings-modal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Portfolio Holdings</h3>
+        <button class="modal-close" id="close-holdings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <table class="holdings-table" id="holdings-table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Name</th>
+              <th>Shares</th>
+              <th>Avg Cost</th>
+              <th>Price</th>
+              <th>Value</th>
+              <th>G/L %</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="holdings-body"></tbody>
+        </table>
+        <div class="modal-actions">
+          <button class="secondary-btn small" id="add-holding-btn">+ Add Holding</button>
+          <button class="primary-btn small" id="save-holdings-btn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== STATE ==========
+    let brokerageData = JSON.parse(localStorage.getItem('fintel_brokerage') || 'null');
+    let parsedTransactions = JSON.parse(localStorage.getItem('fintel_transactions') || '[]');
+
+    function saveBrokerageToStorage() {
+      if (brokerageData) {
+        localStorage.setItem('fintel_brokerage', JSON.stringify(brokerageData));
+      } else {
+        localStorage.removeItem('fintel_brokerage');
+      }
+    }
+
+    function saveTransactionsToStorage() {
+      localStorage.setItem('fintel_transactions', JSON.stringify(parsedTransactions));
+    }
+
+    // ========== TAB SWITCHING ==========
+    document.querySelectorAll('.tab-bar').forEach(bar => {
+      bar.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const card = bar.closest('.card');
+          card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          card.querySelector('#' + btn.dataset.tab).classList.add('active');
+        });
+      });
+    });
+
+    // ========== PDF UPLOAD (Banking) ==========
+    const pdfDropZone = document.getElementById('pdf-drop-zone');
+    const pdfInput = document.getElementById('pdf-input');
+
+    pdfDropZone.addEventListener('click', () => pdfInput.click());
+    pdfDropZone.addEventListener('dragover', e => { e.preventDefault(); pdfDropZone.classList.add('drag-over'); });
+    pdfDropZone.addEventListener('dragleave', () => pdfDropZone.classList.remove('drag-over'));
+    pdfDropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      pdfDropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleBankPdf(e.dataTransfer.files[0]);
+    });
+    pdfInput.addEventListener('change', e => { if (e.target.files[0]) handleBankPdf(e.target.files[0]); });
+
+    async function handleBankPdf(file) {
+      const status = document.getElementById('pdf-status');
+      const icon = document.getElementById('pdf-status-icon');
+      const text = document.getElementById('pdf-status-text');
+      status.classList.remove('hidden');
+      icon.textContent = '';
+      text.textContent = 'Parsing PDF with AI...';
+      status.className = 'status-loading';
+
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      try {
+        const resp = await fetch('/api/parse-pdf', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (resp.ok) {
+          if (data.checking !== null) document.getElementById('checking').value = data.checking;
+          if (data.savings !== null) document.getElementById('savings').value = data.savings;
+          if (data.transactions && data.transactions.length > 0) {
+            parsedTransactions = data.transactions.map(t => ({ ...t, category: t.category || 'Uncategorized' }));
+            saveTransactionsToStorage();
+            renderTransactions();
+          }
+          icon.textContent = '';
+          text.textContent = 'Data extracted successfully! Values updated.';
+          status.className = 'status-success';
+          const manualTab = document.querySelector('[data-tab="manual-banking"]');
+          manualTab.click();
+        } else {
+          throw new Error(data.error);
+        }
+      } catch (err) {
+        icon.textContent = '';
+        text.textContent = err.message || 'Failed to parse PDF';
+        status.className = 'status-error';
+      }
+    }
+
+    // ========== BROKERAGE CONNECTION ==========
+    document.getElementById('connect-brokerage-btn').addEventListener('click', connectBrokerage);
+
+    async function connectBrokerage() {
+      const apiKey = document.getElementById('brokerage-api-key').value.trim();
+      if (!apiKey) return alert('Please enter an API key');
+
+      const loading = document.getElementById('brokerage-loading');
+      loading.classList.remove('hidden');
+
+      try {
+        const resp = await fetch('/api/connect-brokerage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          brokerageData = { ...data, risk: document.getElementById('risk').value };
+          saveBrokerageToStorage();
+          showBrokerageConnected();
+        } else {
+          throw new Error(data.error);
+        }
+      } catch (err) {
+        alert(err.message || 'Failed to connect');
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    function showBrokerageConnected() {
+      document.getElementById('brokerage-connect').querySelector('.input-group').classList.add('hidden');
+      document.getElementById('brokerage-connected').classList.remove('hidden');
+      document.getElementById('brokerage-fallback').classList.add('hidden');
+
+      const summary = document.getElementById('portfolio-summary');
+      summary.innerHTML = `
+        <div class="summary-row"><span>Account</span><strong>${brokerageData.accountName || 'Brokerage'}</strong></div>
+        <div class="summary-row"><span>Total Value</span><strong>$${Number(brokerageData.accountValue).toLocaleString()}</strong></div>
+        <div class="summary-row"><span>Cash</span><strong>$${Number(brokerageData.cashBalance).toLocaleString()}</strong></div>
+        <div class="summary-row"><span>Holdings</span><strong>${brokerageData.holdings.length} positions</strong></div>
+      `;
+    }
+
+    document.getElementById('disconnect-brokerage').addEventListener('click', () => {
+      brokerageData = null;
+      saveBrokerageToStorage();
+      document.getElementById('brokerage-connect').querySelector('.input-group').classList.remove('hidden');
+      document.getElementById('brokerage-connected').classList.add('hidden');
+      document.getElementById('brokerage-fallback').classList.remove('hidden');
+      document.getElementById('brokerage-api-key').value = '';
+    });
+
+    // ========== HOLDINGS MODAL ==========
+    document.getElementById('view-holdings-btn').addEventListener('click', () => {
+      renderHoldingsModal();
+      document.getElementById('holdings-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('close-holdings').addEventListener('click', () => {
+      document.getElementById('holdings-modal').classList.add('hidden');
+    });
+
+    document.querySelector('.modal-overlay').addEventListener('click', () => {
+      document.getElementById('holdings-modal').classList.add('hidden');
+    });
+
+    function renderHoldingsModal() {
+      const tbody = document.getElementById('holdings-body');
+      tbody.innerHTML = '';
+      if (!brokerageData || !brokerageData.holdings) return;
+
+      brokerageData.holdings.forEach((h, i) => {
+        const tr = document.createElement('tr');
+        const glClass = h.gainLossPercent >= 0 ? 'gain' : 'loss';
+        tr.innerHTML = `
+          <td><input class="table-input" value="${h.symbol}" data-field="symbol" data-idx="${i}"></td>
+          <td><input class="table-input wide" value="${h.name}" data-field="name" data-idx="${i}"></td>
+          <td><input class="table-input num" type="number" value="${h.shares}" data-field="shares" data-idx="${i}"></td>
+          <td><input class="table-input num" type="number" step="0.01" value="${h.avgCost}" data-field="avgCost" data-idx="${i}"></td>
+          <td><input class="table-input num" type="number" step="0.01" value="${h.currentPrice}" data-field="currentPrice" data-idx="${i}"></td>
+          <td>$${Number(h.marketValue).toLocaleString()}</td>
+          <td class="${glClass}">${h.gainLossPercent >= 0 ? '+' : ''}${h.gainLossPercent}%</td>
+          <td><button class="text-btn danger" onclick="removeHolding(${i})">x</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.removeHolding = function(idx) {
+      brokerageData.holdings.splice(idx, 1);
+      renderHoldingsModal();
+    };
+
+    document.getElementById('add-holding-btn').addEventListener('click', () => {
+      if (!brokerageData) return;
+      brokerageData.holdings.push({
+        symbol: 'NEW', name: 'New Holding', shares: 0,
+        avgCost: 0, currentPrice: 0, marketValue: 0,
+        gainLoss: 0, gainLossPercent: 0
+      });
+      renderHoldingsModal();
+    });
+
+    document.getElementById('save-holdings-btn').addEventListener('click', () => {
+      const inputs = document.querySelectorAll('#holdings-body .table-input');
+      inputs.forEach(inp => {
+        const idx = parseInt(inp.dataset.idx);
+        const field = inp.dataset.field;
+        let val = inp.value;
+        if (inp.type === 'number') val = parseFloat(val) || 0;
+        brokerageData.holdings[idx][field] = val;
+      });
+      brokerageData.holdings.forEach(h => {
+        h.marketValue = h.shares * h.currentPrice;
+        h.gainLoss = (h.currentPrice - h.avgCost) * h.shares;
+        h.gainLossPercent = h.avgCost > 0 ? parseFloat((((h.currentPrice - h.avgCost) / h.avgCost) * 100).toFixed(2)) : 0;
+      });
+      brokerageData.accountValue = brokerageData.holdings.reduce((s, h) => s + h.marketValue, 0) + (brokerageData.cashBalance || 0);
+      saveBrokerageToStorage();
+      showBrokerageConnected();
+      document.getElementById('holdings-modal').classList.add('hidden');
+    });
+
+    // ========== TRANSACTION PARSING ==========
+    document.getElementById('parse-txn-btn').addEventListener('click', parseTransactions);
+
+    async function parseTransactions() {
+      const text = document.getElementById('transactions-text').value.trim();
+      if (!text) return alert('Please enter some transaction data first');
+
+      const loading = document.getElementById('txn-loading');
+      loading.classList.remove('hidden');
+
+      try {
+        const resp = await fetch('/api/parse-transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          parsedTransactions = data.transactions || [];
+          saveTransactionsToStorage();
+          renderTransactions(data.summary);
+        } else {
+          throw new Error(data.error);
+        }
+      } catch (err) {
+        alert(err.message || 'Failed to parse transactions');
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    // Transaction PDF upload
+    const txnDropZone = document.getElementById('txn-drop-zone');
+    const txnPdfInput = document.getElementById('txn-pdf-input');
+
+    txnDropZone.addEventListener('click', () => txnPdfInput.click());
+    txnDropZone.addEventListener('dragover', e => { e.preventDefault(); txnDropZone.classList.add('drag-over'); });
+    txnDropZone.addEventListener('dragleave', () => txnDropZone.classList.remove('drag-over'));
+    txnDropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      txnDropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleTxnPdf(e.dataTransfer.files[0]);
+    });
+    txnPdfInput.addEventListener('change', e => { if (e.target.files[0]) handleTxnPdf(e.target.files[0]); });
+
+    async function handleTxnPdf(file) {
+      const loading = document.getElementById('txn-loading');
+      loading.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      try {
+        const resp = await fetch('/api/parse-transaction-pdf', { method: 'POST', body: formData });
+        const data = await resp.json();
+        if (resp.ok && data.transactions && data.transactions.length > 0) {
+          parsedTransactions = data.transactions;
+          saveTransactionsToStorage();
+          renderTransactions(data.summary);
+        } else {
+          alert('No transactions found in PDF. Try pasting them manually.');
+        }
+      } catch (err) {
+        alert('Failed to parse transaction PDF');
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    function renderTransactions(summary) {
+      const results = document.getElementById('txn-results');
+      results.classList.remove('hidden');
+
+      if (summary) {
+        const bar = document.getElementById('txn-summary-bar');
+        bar.innerHTML = `
+          <div class="txn-stat"><span>Spent</span><strong class="loss">$${Number(summary.totalSpent || 0).toLocaleString()}</strong></div>
+          <div class="txn-stat"><span>Income</span><strong class="gain">$${Number(summary.totalIncome || 0).toLocaleString()}</strong></div>
+          ${(summary.topCategories || []).slice(0, 3).map(c =>
+            `<div class="txn-stat"><span>${c.category}</span><strong>$${Number(c.amount).toLocaleString()}</strong></div>`
+          ).join('')}
+        `;
+      }
+
+      const tbody = document.getElementById('txn-table-body');
+      tbody.innerHTML = '';
+      parsedTransactions.forEach((t, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${t.date || '-'}</td>
+          <td>${t.description}</td>
+          <td class="${t.type === 'credit' ? 'gain' : 'loss'}">$${Number(t.amount).toLocaleString()}</td>
+          <td><span class="type-badge ${t.type}">${t.type}</span></td>
+          <td>${t.category || '-'}</td>
+          <td><button class="text-btn danger" onclick="removeTxn(${i})">x</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.removeTxn = function(idx) {
+      parsedTransactions.splice(idx, 1);
+      saveTransactionsToStorage();
+      renderTransactions();
+    };
+
+    document.getElementById('add-txn-row').addEventListener('click', () => {
+      parsedTransactions.push({ date: '', description: 'New transaction', amount: 0, type: 'debit', category: 'Other' });
+      saveTransactionsToStorage();
+      renderTransactions();
+    });
+
+    // ========== MAIN ANALYSIS ==========
+    document.getElementById('analyze-btn').addEventListener('click', async () => {
+      const loading = document.getElementById('loading');
+      const adviceContainer = document.getElementById('advice-container');
+      const adviceContent = document.getElementById('advice-content');
+
+      loading.classList.remove('hidden');
+      adviceContainer.classList.add('hidden');
+
+      const data = {
+        finances: {
+          checking: parseFloat(document.getElementById('checking').value) || 0,
+          savings: parseFloat(document.getElementById('savings').value) || 0
+        },
+        portfolio: brokerageData ? {
+          ...brokerageData,
+          risk: document.getElementById('risk') ? document.getElementById('risk').value : 'moderate'
+        } : {
+          value: parseFloat(document.getElementById('portfolio').value) || 0,
+          risk: document.getElementById('risk').value
+        },
+        news: document.getElementById('news').value.split('\n').filter(l => l.trim()),
+        transactions: parsedTransactions
+      };
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.error) throw new Error(result.error);
+        adviceContent.innerHTML = marked.parse(result.advice);
+        adviceContainer.classList.remove('hidden');
+      } catch (error) {
+        alert('Error generating advice: ' + (error.message || 'Please check console.'));
+        console.error(error);
+      } finally {
+        loading.classList.add('hidden');
+      }
+    });
+
+    // ========== RESTORE SAVED STATE ==========
+    if (brokerageData) showBrokerageConnected();
+    if (parsedTransactions.length > 0) renderTransactions();
+  </script>
+</body>
+</html>
